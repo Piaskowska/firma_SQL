@@ -27,4 +27,10 @@ Podzapytania SELECT umożliwiające:
     •	wyświetlanie pracowników wraz z ich przełożonymi, a także oddziału firmy, w którym pracują,
   
     •	wyświetlanie pracowników, którzy są przełożonymi.
+    
+    •	wyświetlanie danych kobiet za pomocą widoku,
+    
+    •	wyświetlanie za pomocą perspektywy systemowej informacji o kolumnach w tabeli pracownicy.
+    
+
   
