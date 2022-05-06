@@ -1,12 +1,23 @@
+/*
+Tabela przechowujaca id, nazwe oraz id_kierownika oddzialu firmy. 
+Polaczona jest z tabela PRACOWNICY zwiazkiem 1 do 1, co daje nam kierownika danego oddzialu firmy.
+*/
+
 CREATE TABLE oddzialy_firmy
   (
-    id    			NUMBER(2) CONSTRAINT oddzialy_firmy_PK PRIMARY KEY,
-    nazwa 			VARCHAR2(50) NOT NULL,
+    id    			  NUMBER(2) CONSTRAINT oddzialy_firmy_PK PRIMARY KEY,
+    nazwa 			  VARCHAR2(50) NOT NULL,
     id_kierownika	NUMBER(4) CONSTRAINT oddzialy_firmy_kierow_U UNIQUE,
-	CONSTRAINT oddzialy_firmy_CH CHECK (INITCAP(nazwa)=nazwa)
+	  CONSTRAINT oddzialy_firmy_CH CHECK (INITCAP(nazwa)=nazwa)
   );
-  
-  CREATE TABLE pracownicy
+
+/*
+Tabela przechowujaca dane pracownikow. 
+Znajduje sie tu rekurencyjny zwiazek jeden do wielu, poniewaz pracownik moze byc kierownikiem, a wtedy moze posiadac wielu podwladnych.
+Dzieki zwiazkowi jeden do wielu z tabela ODDZIALY FIRMY mozemy znalezc w jakim oddziale pracuje dany pracownik.
+*/
+
+CREATE TABLE pracownicy
   (
     id                NUMBER(4) CONSTRAINT pracownicy_PK PRIMARY KEY,
     pierwsze_imie     VARCHAR2(15) NOT NULL,
@@ -19,7 +30,7 @@ CREATE TABLE oddzialy_firmy
     data_urodzenia    DATE NOT NULL,
     data_zatrudnienia DATE DEFAULT SYSDATE NOT NULL,
     id_oddzialu       NUMBER(2) NOT NULL CONSTRAINT pracownicy_oddzialy_FK REFERENCES oddzialy_firmy(id),
-	id_przelozonego   NUMBER(4) CONSTRAINT pracownicy_przelozony_FK REFERENCES pracownicy (id),
+	  id_przelozonego   NUMBER(4) CONSTRAINT pracownicy_przelozony_FK REFERENCES pracownicy (id),
 	CONSTRAINT pracownicy_daty_CH CHECK (data_zatrudnienia>data_urodzenia),
 	CONSTRAINT pracownicy_nazwisko_CH CHECK (INITCAP(nazwisko)=nazwisko),
 	CONSTRAINT pracownicy_p_imie_CH CHECK (INITCAP(pierwsze_imie)=pierwsze_imie),
@@ -27,15 +38,21 @@ CREATE TABLE oddzialy_firmy
   );
   
   ALTER TABLE oddzialy_firmy ADD CONSTRAINT oddzialy_firmy_pracownicy_FK FOREIGN KEY (id_kierownika) REFERENCES pracownicy(id);
-  
+
+/*
+Tabela przechowujaca dane o czlonkach rodzin pracownikow.
+Dzieki zwiazkowi identyfikujacemu na klucz glowny tej tabeli sklada sie pierwsze imie czlonka rodziny i id pracownika.
+Mozemy znalezc informacje kogo na utrzymaniu ma dany pracownik.
+*/
+
 CREATE TABLE CZLONKOWIE_RODZIN
   (
     pierwsze_imie         VARCHAR2(15),
     plec                  CHAR(1) NOT NULL 
-	                      CONSTRAINT czlonkowie_rodzin_plec_CH CHECK (plec IN ('K', 'M')),
+	                         CONSTRAINT czlonkowie_rodzin_plec_CH CHECK (plec IN ('K', 'M')),
     data_urodzenia        DATE NOT NULL ,
     stopien_pokrewienstwa VARCHAR2(30) NOT NULL,
-	id_pracownika         NUMBER(4) CONSTRAINT czlonkowie_rodzin_prac_FK REFERENCES pracownicy(id),
+  	id_pracownika         NUMBER(4) CONSTRAINT czlonkowie_rodzin_prac_FK REFERENCES pracownicy(id),
 	CONSTRAINT czlonkowie_rodzin_PK PRIMARY KEY (id_pracownika, pierwsze_imie),
 	CONSTRAINT czlonkowie_rodzin_imie_CH CHECK (INITCAP(pierwsze_imie)=pierwsze_imie)
   );
@@ -115,7 +132,7 @@ WHERE id=3;
 COMMIT;
 
 
---zmiana, aby id_kieronika w oddzialy_firmy bya kolumn¹ wymagan¹
+--zmiana, aby id_kieronika w oddzialy_firmy byla kolumn¹ wymagan¹
 ALTER TABLE oddzialy_firmy MODIFY id_kierownika NOT NULL;
 
 --w przypadku dodawania córki plec musi byæ 'K', a w przypadku syna 'M', inne stopnie pokrewieñstwa te¿ s¹ akceptowane
@@ -140,7 +157,7 @@ FROM PRACOWNICY p JOIN ODDZIALY_FIRMY o ON o.id=p.id_oddzialu
 GROUP BY o.nazwa
 ORDER BY 1 ASC;
 
---wyswietlanie 
+--wyswietlanie pracowników wraz z ich przelozonymi, a tak¿e oddzialu firmy, w którym pracuj¹
 SELECT p.pierwsze_imie, p.nazwisko
 FROM pracownicy p  LEFT JOIN pracownicy s ON p.id_przelozonego=s.id
 WHERE p.data_zatrudnienia< s.data_zatrudnienia
@@ -153,7 +170,7 @@ WHERE id IN (SELECT DISTINCT id_przelozonego
                         FROM pracownicy)
 ORDER BY 1;
 
---zmiana nazwy tabeli a czlonkowie_rodzin na osoby_na_utrzymaniu
+--zmiana nazwy tabeli czlonkowie_rodzin na osoby_na_utrzymaniu
 RENAME czlonkowie_rodzin to osoby_na_utrzymaniu;
 ALTER TABLE osoby_na_utrzymaniu RENAME CONSTRAINT czlonkowie_rodzin_PK TO osoby_na_utrzymaniu_PK;
 ALTER TABLE osoby_na_utrzymaniu RENAME CONSTRAINT czlonkowie_rodzin_plec_CH TO osoby_na_utrzymaniu_plec_CH;
