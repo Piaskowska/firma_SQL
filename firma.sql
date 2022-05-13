@@ -157,12 +157,6 @@ FROM PRACOWNICY p JOIN ODDZIALY_FIRMY o ON o.id=p.id_oddzialu
 GROUP BY o.nazwa
 ORDER BY 1 ASC;
 
---wyswietlanie pracowników wraz z ich przelozonymi, a tak¿e oddzialu firmy, w którym pracuj¹
-SELECT p.pierwsze_imie, p.nazwisko
-FROM pracownicy p  LEFT JOIN pracownicy s ON p.id_przelozonego=s.id
-WHERE p.data_zatrudnienia< s.data_zatrudnienia
-ORDER BY 2, 1;
-
 --wyswietlanie pracowników, którzy s¹ przelozonymi
 SELECT nazwisko
 FROM pracownicy
